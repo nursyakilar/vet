@@ -711,3 +711,136 @@ footer {
         grid-template-columns: 1fr;
     }
 }
+
+/* ==========================================
+   PAWS & CLAWS ADMIN DASHBOARD UNIQUE STYLES
+   ========================================== */
+
+/* Full Screen Layout Adjustments */
+.admin-body {
+    background-color: #f8fafc;
+    color: #334155;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.admin-main {
+    max-width: 550px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 48px 24px;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Dashboard Navigation Bar Override */
+.admin-navbar {
+    background-color: white;
+    box-shadow: 0 1px 3px rgb(0 0 0 / 0.05);
+    border-b: 1px solid #f1f5f9;
+}
+
+.admin-panel-badge {
+    background-color: #f0fdfa;
+    color: var(--primary-teal);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccfbf1;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Dashboard Form Card */
+.dashboard-card {
+    background: white;
+    width: 100%;
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: var(--shadow-premium);
+    border: 1px solid #f1f5f9;
+}
+
+.dashboard-card-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.dashboard-card-header h1 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text-dark);
+}
+
+.dashboard-card-header p {
+    font-size: 13px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+.teal-divider {
+    width: 48px;
+    height: 4px;
+    background-color: var(--primary-teal);
+    margin: 12px auto 8px auto;
+    border-radius: 50px;
+}
+
+/* Form Layout Custom Spacing */
+.admin-form-group {
+    margin-bottom: 20px;
+}
+
+.admin-input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.admin-input-control {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    color: var(--text-dark);
+    background-color: white;
+    outline: none;
+    font-weight: 500;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-input-control:focus {
+    border-color: var(--primary-teal);
+    box-shadow: 0 0 0 4px rgba(13, 148, 136, 0.1);
+}
+
+/* Button Layout Custom Overrides */
+.btn-admin-submit {
+    width: 100%;
+    background-color: var(--primary-teal);
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.2);
+    transition: background-color 0.2s ease;
+}
+
+.btn-admin-submit:hover {
+    background-color: var(--primary-hover);
+}
+
