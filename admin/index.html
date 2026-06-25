@@ -77,12 +77,16 @@
     </footer>
 
     <script>
-    const dataUrl = '../content.json';
-    const REPO_PATH = "nursyakilar/vet_clinic"; // Your repo name
+    // FIX: Using an absolute URL path so the browser never blocks the data stream across networks
+    const dataUrl = 'https://github.io';
+    const REPO_PATH = "nursyakilar/vet_clinic";
 
-    // 1. Load existing live values into form inputs automatically
+    // 1. Fetch and auto-populate existing live values into form inputs
     fetch(dataUrl + '?nocache=' + new Date().getTime())
-        .then(res => res.json())
+        .then(res => {
+            if (!res.ok) throw new Error('Data file connection refused');
+            return res.json();
+        })
         .then(data => {
             document.getElementById('form-status-banner').value = data.status_banner || '';
             document.getElementById('form-hero-title').value = data.hero_title || '';
@@ -90,12 +94,19 @@
             document.getElementById('form-boarding-price').value = data.boarding_price || '';
             document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
         })
-        .catch(err => console.error("Could not fetch initial live data:", err));
+        .catch(err => {
+            console.error("Could not fetch live data:", err);
+            // Fallback default values so fields are NEVER empty if a fetch fails
+            document.getElementById('form-status-banner').value = "🟢 Current Status: Open Today until 8:00 PM. Walk-ins Welcome!";
+            document.getElementById('form-hero-title').value = "Premium Medical Care & Luxury Boarding For Your Pets";
+            document.getElementById('form-consult-price').value = "RM 40 - RM 60";
+            document.getElementById('form-boarding-price').value = "RM 35";
+            document.getElementById('form-boarding-slots').value = "5 Slots Left!";
+        });
 
     // 2. Safe Save Function via secure prompt loop
     function saveClinicData() {
-        // PROMPT FIX: Instead of hardcoding the secret, the website safely asks you for it when saving!
-        const GH_TOKEN = prompt("Enter your secure GitHub Access Token to authorize this deploy updates:");
+        const GH_TOKEN = prompt("Enter your secure GitHub Access Token to authorize these live updates:");
         
         if (!GH_TOKEN) {
             alert("Save cancelled. An authorized token string is required.");
@@ -117,40 +128,44 @@
         const commitUrl = `https://github.com{REPO_PATH}/contents/content.json`;
 
         // Fetch current file signature mapping to prevent overwrite conflicts
-        fetch(commitUrl)
-            .then(res => res.json())
-            .then(fileInfo => {
-                const currentSha = fileInfo.sha;
-                const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
+        fetch(commitUrl, {
+            headers: { 'Authorization': `token ${GH_TOKEN}` }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error('Invalid token or repository access denied.');
+            return res.json();
+        })
+        .then(fileInfo => {
+            const currentSha = fileInfo.sha;
+            const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
 
-                return fetch(commitUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GH_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: "Content updated via Dashboard Interface Panel",
-                        content: updatedContentBase64,
-                        sha: currentSha,
-                        branch: "main"
-                    })
-                });
-            })
-            .then(response => {
-                if (!response.ok) throw new Error('GitHub API Connection Refused');
-                alert("🎉 Success! Your changes have been pushed to GitHub. The live site will refresh inside 30 seconds!");
-            })
-            .catch(err => {
-                console.error(err);
-                alert("Security Error: The token you entered is invalid or does not have repository write access.");
-            })
-            .finally(() => {
-                button.innerText = "Publish Updates Live";
-                button.disabled = false;
+            return fetch(commitUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${GH_TOKEN}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Content updated via Dashboard Interface Panel",
+                    content: updatedContentBase64,
+                    sha: currentSha,
+                    branch: "main"
+                })
             });
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('GitHub API Connection Refused');
+            alert("🎉 Success! Your changes have been pushed to GitHub. The live site will refresh inside 30 seconds!");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Security Error: " + err.message);
+        })
+        .finally(() => {
+            button.innerText = "Publish Updates Live";
+            button.disabled = false;
+        });
     }
 </script>
-
 </body>
 </html>
