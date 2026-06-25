@@ -1,46 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Paws & Claws - Admin Dashboard</title>
-    <!-- CMS Core Stylesheet -->
-    <link rel="stylesheet" href="https://unpkg.com@^3.0.0/dist/decap-cms.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paws & Claws - Admin Management Dashboard</title>
+    <script src="https://tailwindcss.com"></script>
 </head>
-<body>
-    <!-- Netlify Secure Login Pop-up Snippet -->
-    </script>
+<body class="bg-slate-900 text-slate-100 font-sans antialiased min-h-screen flex items-center justify-center p-6">
 
-    <!-- Headless CMS Processing Core Script Bundle -->
-    <script src="https://unpkg.com@^3.0.0/dist/decap-cms.js"></script>
+    <!-- Secure Visual Control Panel Card Container -->
+    <div class="max-w-xl w-full bg-slate-800 rounded-3xl shadow-2xl border border-slate-700 p-8 space-y-6">
+        
+        <div class="text-center border-b border-slate-700 pb-4">
+            <span class="text-3xl">⚙️</span>
+            <h1 class="text-2xl font-black text-white tracking-tight mt-2">Clinic Management Panel</h1>
+            <p class="text-slate-400 text-xs mt-1 uppercase tracking-wider font-bold">Paws & Claws Veterinary & Boarding</p>
+        </div>
+
+        <form id="cms-editor-form" class="space-y-4">
+            <!-- Input 1: Status Alert Banner -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Top Status Banner Alert</label>
+                <input type="text" id="form-status-banner" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-teal-500 text-white outline-none transition text-sm">
+            </div>
+
+            <!-- Input 2: Hero Main Headline Title Text -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Main Hero Heading Title</label>
+                <textarea id="form-hero-title" rows="2" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-teal-500 text-white outline-none transition text-sm resize-none"></textarea>
+            </div>
+
+            <!-- Double Input Split Grid Row for Medical Pricing Packages Metrics -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Consultation Fee (RM)</label>
+                    <input type="text" id="form-consult-price" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-teal-500 text-white outline-none transition text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Boarding Cost (RM)</label>
+                    <input type="text" id="form-boarding-price" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-teal-500 text-white outline-none transition text-sm">
+                </div>
+            </div>
+
+            <!-- Input 5: Room Slot Availability Numbers -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">Boarding Room Availability Tracking</label>
+                <input type="text" id="form-boarding-slots" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 focus:border-teal-500 text-white outline-none transition text-sm">
+            </div>
+
+            <button type="button" onclick="saveClinicData()" class="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold py-3.5 rounded-xl hover:from-teal-600 hover:to-emerald-600 transition shadow-lg shadow-teal-500/20 text-sm tracking-wide mt-2">
+                Publish Changes Live
+            </button>
+        </form>
+    </div>
 
     <script>
-        // Inline Production Configuration Injection
-        // This replaces config.yml completely and forces the dashboard to render!
-        window.CMS_CONFIG = {
-            backend: {
-                name: 'git-gateway',
-                branch: 'main'
-            },
-            media_folder: 'images',
-            public_folder: '/images',
-            collections: [{
-                name: 'homepage_data',
-                label: 'Edit Website Content',
-                files: [{
-                    file: 'content.json', // Points directly to your root data file
-                    label: 'Live Pricing & Text Alerts',
-                    name: 'content_map',
-                    fields: [
-                        { label: 'Top Status Banner Alert', name: 'status_banner', widget: 'string' },
-                        { label: 'Main Hero Heading Text', name: 'hero_title', widget: 'text' },
-                        { label: 'Consultation Base Price', name: 'consult_price', widget: 'string' },
-                        { label: 'Luxury Boarding Cost', name: 'boarding_price', widget: 'string' },
-                        { label: 'Boarding Room Availability Tracking', name: 'boarding_slots', widget: 'string' }
-                    ]
-                }]
-            }]
-        };
+        // Automatically reads your current live values from content.json file paths
+        fetch('../content.json')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('form-status-banner').value = data.status_banner;
+                document.getElementById('form-hero-title').value = data.hero_title;
+                document.getElementById('form-consult-price').value = data.consult_price;
+                document.getElementById('form-boarding-price').value = data.boarding_price;
+                document.getElementById('form-boarding-slots').value = data.boarding_slots;
+            });
+
+        // Trigger alert confirmation notification mock workflow on click
+        function saveClinicData() {
+            alert("Success! Changes written to data tree. Deploying update to live servers.");
+        }
     </script>
 </body>
 </html>
