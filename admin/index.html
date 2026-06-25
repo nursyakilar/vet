@@ -78,27 +78,9 @@
 
     <script>
     const dataUrl = '../content.json';
+    const REPO_PATH = "nursyakilar/vet_clinic"; // Your repo name
 
-    // 1. Load existing live values when the dashboard opens
-    fetch(dataUrl)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('form-status-banner').value = data.status_banner || '';
-            document.getElementById('form-hero-title').value = data.hero_title || '';
-            document.getElementById('form-consult-price').value = data.consult_price || '';
-            document.getElementById('form-boarding-price').value = data.boarding_price || '';
-            document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
-        })
-        .catch(err => console.error("Error reading JSON:", err));
-
-    // 2. Dynamic Save Function to commit edits live to GitHub/Netlify
-    const dataUrl = '../content.json';
-    // 🛠️ DEVELOPER CONFIG: Generate a free token in your GitHub Account Settings -> Developer Settings -> Personal Access Tokens (Classic)
-    // Give it "repo" permissions so it can save files. Paste your text string key below:
-    const GH_TOKEN = "PASTE_YOUR_GITHUB_TOKEN_HERE"; 
-    const REPO_PATH = "nursyakilar/vet_clinic"; // Make sure this matches your exact repo name
-
-    // 1. Load existing live values
+    // 1. Load existing live values into form inputs automatically
     fetch(dataUrl + '?nocache=' + new Date().getTime())
         .then(res => res.json())
         .then(data => {
@@ -107,10 +89,19 @@
             document.getElementById('form-consult-price').value = data.consult_price || '';
             document.getElementById('form-boarding-price').value = data.boarding_price || '';
             document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
-        });
+        })
+        .catch(err => console.error("Could not fetch initial live data:", err));
 
-    // 2. Overwrite file directly on GitHub
+    // 2. Safe Save Function via secure prompt loop
     function saveClinicData() {
+        // PROMPT FIX: Instead of hardcoding the secret, the website safely asks you for it when saving!
+        const GH_TOKEN = prompt("Enter your secure GitHub Access Token to authorize this deploy updates:");
+        
+        if (!GH_TOKEN) {
+            alert("Save cancelled. An authorized token string is required.");
+            return;
+        }
+
         const button = document.querySelector('.btn-admin-submit');
         button.innerText = "Publishing Live...";
         button.disabled = true;
@@ -125,7 +116,7 @@
 
         const commitUrl = `https://github.com{REPO_PATH}/contents/content.json`;
 
-        // Fetch current file signature
+        // Fetch current file signature mapping to prevent overwrite conflicts
         fetch(commitUrl)
             .then(res => res.json())
             .then(fileInfo => {
@@ -139,7 +130,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        message: "Content updated via Dashboard",
+                        message: "Content updated via Dashboard Interface Panel",
                         content: updatedContentBase64,
                         sha: currentSha,
                         branch: "main"
@@ -147,18 +138,18 @@
                 });
             })
             .then(response => {
-                if (!response.ok) throw new Error('GitHub API Overwrite Failed');
-                alert("🎉 Success! Data saved directly to GitHub Pages. Your live website will refresh in 30 seconds!");
+                if (!response.ok) throw new Error('GitHub API Connection Refused');
+                alert("🎉 Success! Your changes have been pushed to GitHub. The live site will refresh inside 30 seconds!");
             })
             .catch(err => {
                 console.error(err);
-                alert("Authorization token error. Make sure your GitHub token is pasted correctly.");
+                alert("Security Error: The token you entered is invalid or does not have repository write access.");
             })
             .finally(() => {
                 button.innerText = "Publish Updates Live";
                 button.disabled = false;
             });
-        }
+    }
 </script>
 
 </body>
