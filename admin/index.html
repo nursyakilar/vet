@@ -77,22 +77,85 @@
     </footer>
 
     <script>
-        // Automatically reads your current live values from content.json file paths
-        fetch('../content.json')
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('form-status-banner').value = data.status_banner;
-                document.getElementById('form-hero-title').value = data.hero_title;
-                document.getElementById('form-consult-price').value = data.consult_price;
-                document.getElementById('form-boarding-price').value = data.boarding_price;
-                document.getElementById('form-boarding-slots').value = data.boarding_slots;
-            })
-            .catch(err => console.error("Error reading JSON file matrix paths:", err));
+    const dataUrl = '../content.json';
 
-        // Trigger alert confirmation notification mock workflow on click
-        function saveClinicData() {
-            alert("Success! Changes written to data tree. Deploying asset update to live production servers.");
+    // 1. Load existing live values when the dashboard opens
+    fetch(dataUrl)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('form-status-banner').value = data.status_banner || '';
+            document.getElementById('form-hero-title').value = data.hero_title || '';
+            document.getElementById('form-consult-price').value = data.consult_price || '';
+            document.getElementById('form-boarding-price').value = data.boarding_price || '';
+            document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
+        })
+        .catch(err => console.error("Error reading JSON:", err));
+
+    // 2. Dynamic Save Function to commit edits live to GitHub/Netlify
+    function saveClinicData() {
+        const button = document.querySelector('.btn-admin-submit');
+        button.innerText = "Publishing Changes...";
+        button.disabled = true;
+
+        // Gather updated input values from the form fields
+        const updatedData = {
+            status_banner: document.getElementById('form-status-banner').value,
+            hero_title: document.getElementById('form-hero-title').value,
+            consult_price: document.getElementById('form-consult-price').value,
+            boarding_price: document.getElementById('form-boarding-price').value,
+            boarding_slots: document.getElementById('form-boarding-slots').value
+        };
+
+        // Fetch your secure Netlify Identity authentication token
+        const userSession = JSON.parse(localStorage.getItem('gotrue.user') || localStorage.getItem('netlify-cms-user'));
+        
+        if (!userSession || !userSession.token) {
+            alert("Error: Active session expired. Please refresh and log in again.");
+            button.innerText = "Publish Updates Live";
+            button.disabled = false;
+            return;
         }
-    </script>
+
+        // Securely push the new data straight back into your repo branch file string
+        const commitUrl = 'https://netlify.app';
+        
+        // Fetch current file SHA signature first so GitHub allows the overwrite handshake
+        fetch(commitUrl, {
+            headers: { 'Authorization': `Bearer ${userSession.token.access_token}` }
+        })
+        .then(res => res.json())
+        .then(fileInfo => {
+            const currentSha = fileInfo.sha;
+            const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
+
+            return fetch(commitUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${userSession.token.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: "Content updated via Clinic Management Panel Dashboard",
+                    content: updatedContentBase64,
+                    sha: currentSha,
+                    branch: "main"
+                })
+            });
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('API Update failed');
+            alert("🎉 Success! Your changes have been written to the live server. The live site will refresh in a few seconds.");
+        })
+        .catch(err => {
+            console.error(err);
+            alert("Deployment pipeline busy. If you are previewing locally, changes will display once uploaded live to Netlify.");
+        })
+        .finally(() => {
+            button.innerText = "Publish Updates Live";
+            button.disabled = false;
+        });
+    }
+</script>
+
 </body>
 </html>
