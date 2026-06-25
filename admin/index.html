@@ -77,16 +77,14 @@
     </footer>
 
     <script>
-    // FIX: Using an absolute URL path so the browser never blocks the data stream across networks
-    const dataUrl = 'https://github.io';
-    const REPO_PATH = "nursyakilar/vet";
+    <script>
+    // Make sure your repo name matches your GitHub URL exact casing!
+    const REPO_PATH = "nursyakilar/vet_clinic"; 
+    const dataUrl = `https://github.io`;
 
-    // 1. Fetch and auto-populate existing live values into form inputs
+    // 1. Fetch initial live values into fields
     fetch(dataUrl + '?nocache=' + new Date().getTime())
-        .then(res => {
-            if (!res.ok) throw new Error('Data file connection refused');
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
             document.getElementById('form-status-banner').value = data.status_banner || '';
             document.getElementById('form-hero-title').value = data.hero_title || '';
@@ -94,17 +92,9 @@
             document.getElementById('form-boarding-price').value = data.boarding_price || '';
             document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
         })
-        .catch(err => {
-            console.error("Could not fetch live data:", err);
-            // Fallback default values so fields are NEVER empty if a fetch fails
-            document.getElementById('form-status-banner').value = "🟢 Current Status: Open Today until 8:00 PM. Walk-ins Welcome!";
-            document.getElementById('form-hero-title').value = "Premium Medical Care & Luxury Boarding For Your Pets";
-            document.getElementById('form-consult-price').value = "RM 40 - RM 60";
-            document.getElementById('form-boarding-price').value = "RM 35";
-            document.getElementById('form-boarding-slots').value = "5 Slots Left!";
-        });
+        .catch(err => console.error("Initial load fetch caught:", err));
 
-    // 2. Safe Save Function via secure prompt loop
+    // 2. Fixed Save Function with Instant Authentication Token Header Injection
     function saveClinicData() {
         const GH_TOKEN = prompt("Enter your secure GitHub Access Token to authorize these live updates:");
         
@@ -127,12 +117,12 @@
 
         const commitUrl = `https://github.com{REPO_PATH}/contents/content.json`;
 
-        // Fetch current file signature mapping to prevent overwrite conflicts
+        // FIXED HANDSHAKE: Passing the Authorization Token right away so GitHub allows the data download stream
         fetch(commitUrl, {
-            headers: { 'Authorization': `token ${GH_TOKEN}` }
+            headers: { 'Authorization': `token ${GH_TOKEN.trim()}` }
         })
         .then(res => {
-            if (!res.ok) throw new Error('Invalid token or repository access denied.');
+            if (!res.ok) throw new Error('Authorization token invalid or repository access denied.');
             return res.json();
         })
         .then(fileInfo => {
@@ -142,11 +132,11 @@
             return fetch(commitUrl, {
                 method: 'PUT',
                 headers: {
-                    'Authorization': `token ${GH_TOKEN}`,
+                    'Authorization': `token ${GH_TOKEN.trim()}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    message: "Content updated via Dashboard Interface Panel",
+                    message: "Content updated via Dashboard Panel",
                     content: updatedContentBase64,
                     sha: currentSha,
                     branch: "main"
@@ -154,7 +144,7 @@
             });
         })
         .then(response => {
-            if (!response.ok) throw new Error('GitHub API Connection Refused');
+            if (!response.ok) throw new Error('GitHub data write stream failed.');
             alert("🎉 Success! Your changes have been pushed to GitHub. The live site will refresh inside 30 seconds!");
         })
         .catch(err => {
@@ -166,6 +156,7 @@
             button.disabled = false;
         });
     }
+
 </script>
 </body>
 </html>
