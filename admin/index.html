@@ -4,14 +4,43 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Paws & Claws - Admin Dashboard</title>
-    <!-- Premium CMS Core Dashboard CSS -->
+    <!-- CMS Core Stylesheet -->
     <link rel="stylesheet" href="https://unpkg.com@^3.0.0/dist/decap-cms.css" />
 </head>
 <body>
-    
+    <!-- Netlify Secure Login Pop-up Snippet -->
     </script>
 
-    <!-- Main Headless CMS Engine Processing Bundle -->
+    <!-- Headless CMS Processing Core Script Bundle -->
     <script src="https://unpkg.com@^3.0.0/dist/decap-cms.js"></script>
+
+    <script>
+        // Inline Production Configuration Injection
+        // This replaces config.yml completely and forces the dashboard to render!
+        window.CMS_CONFIG = {
+            backend: {
+                name: 'git-gateway',
+                branch: 'main'
+            },
+            media_folder: 'images',
+            public_folder: '/images',
+            collections: [{
+                name: 'homepage_data',
+                label: 'Edit Website Content',
+                files: [{
+                    file: 'content.json', // Points directly to your root data file
+                    label: 'Live Pricing & Text Alerts',
+                    name: 'content_map',
+                    fields: [
+                        { label: 'Top Status Banner Alert', name: 'status_banner', widget: 'string' },
+                        { label: 'Main Hero Heading Text', name: 'hero_title', widget: 'text' },
+                        { label: 'Consultation Base Price', name: 'consult_price', widget: 'string' },
+                        { label: 'Luxury Boarding Cost', name: 'boarding_price', widget: 'string' },
+                        { label: 'Boarding Room Availability Tracking', name: 'boarding_slots', widget: 'string' }
+                    ]
+                }]
+            }]
+        };
+    </script>
 </body>
 </html>
