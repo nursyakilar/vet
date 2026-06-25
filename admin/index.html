@@ -92,12 +92,29 @@
         .catch(err => console.error("Error reading JSON:", err));
 
     // 2. Dynamic Save Function to commit edits live to GitHub/Netlify
+    const dataUrl = '../content.json';
+    // 🛠️ DEVELOPER CONFIG: Generate a free token in your GitHub Account Settings -> Developer Settings -> Personal Access Tokens (Classic)
+    // Give it "repo" permissions so it can save files. Paste your text string key below:
+    const GH_TOKEN = "PASTE_YOUR_GITHUB_TOKEN_HERE"; 
+    const REPO_PATH = "nursyakilar/vet_clinic"; // Make sure this matches your exact repo name
+
+    // 1. Load existing live values
+    fetch(dataUrl + '?nocache=' + new Date().getTime())
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('form-status-banner').value = data.status_banner || '';
+            document.getElementById('form-hero-title').value = data.hero_title || '';
+            document.getElementById('form-consult-price').value = data.consult_price || '';
+            document.getElementById('form-boarding-price').value = data.boarding_price || '';
+            document.getElementById('form-boarding-slots').value = data.boarding_slots || '';
+        });
+
+    // 2. Overwrite file directly on GitHub
     function saveClinicData() {
         const button = document.querySelector('.btn-admin-submit');
-        button.innerText = "Publishing Changes...";
+        button.innerText = "Publishing Live...";
         button.disabled = true;
 
-        // Gather updated input values from the form fields
         const updatedData = {
             status_banner: document.getElementById('form-status-banner').value,
             hero_title: document.getElementById('form-hero-title').value,
@@ -106,55 +123,42 @@
             boarding_slots: document.getElementById('form-boarding-slots').value
         };
 
-        // Fetch your secure Netlify Identity authentication token
-        const userSession = JSON.parse(localStorage.getItem('gotrue.user') || localStorage.getItem('netlify-cms-user'));
-        
-        if (!userSession || !userSession.token) {
-            alert("Error: Active session expired. Please refresh and log in again.");
-            button.innerText = "Publish Updates Live";
-            button.disabled = false;
-            return;
-        }
+        const commitUrl = `https://github.com{REPO_PATH}/contents/content.json`;
 
-        // Securely push the new data straight back into your repo branch file string
-        const commitUrl = 'https://netlify.app';
-        
-        // Fetch current file SHA signature first so GitHub allows the overwrite handshake
-        fetch(commitUrl, {
-            headers: { 'Authorization': `Bearer ${userSession.token.access_token}` }
-        })
-        .then(res => res.json())
-        .then(fileInfo => {
-            const currentSha = fileInfo.sha;
-            const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
+        // Fetch current file signature
+        fetch(commitUrl)
+            .then(res => res.json())
+            .then(fileInfo => {
+                const currentSha = fileInfo.sha;
+                const updatedContentBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(updatedData, null, 2))));
 
-            return fetch(commitUrl, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${userSession.token.access_token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: "Content updated via Clinic Management Panel Dashboard",
-                    content: updatedContentBase64,
-                    sha: currentSha,
-                    branch: "main"
-                })
+                return fetch(commitUrl, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${GH_TOKEN}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: "Content updated via Dashboard",
+                        content: updatedContentBase64,
+                        sha: currentSha,
+                        branch: "main"
+                    })
+                });
+            })
+            .then(response => {
+                if (!response.ok) throw new Error('GitHub API Overwrite Failed');
+                alert("🎉 Success! Data saved directly to GitHub Pages. Your live website will refresh in 30 seconds!");
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Authorization token error. Make sure your GitHub token is pasted correctly.");
+            })
+            .finally(() => {
+                button.innerText = "Publish Updates Live";
+                button.disabled = false;
             });
-        })
-        .then(response => {
-            if (!response.ok) throw new Error('API Update failed');
-            alert("🎉 Success! Your changes have been written to the live server. The live site will refresh in a few seconds.");
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Deployment pipeline busy. If you are previewing locally, changes will display once uploaded live to Netlify.");
-        })
-        .finally(() => {
-            button.innerText = "Publish Updates Live";
-            button.disabled = false;
-        });
-    }
+        }
 </script>
 
 </body>
